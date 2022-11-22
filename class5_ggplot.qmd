@@ -1,0 +1,332 @@
+---
+title: "Class5_BGGN213: Using Ggplot2"
+format: pdf
+date: 10-12-22
+---
+**first plot**
+R has base graphics we can use. 
+```{r}
+plot(cars)
+```
+**Plot the same graph with ggplot2** 
+Remember to install ggplot2 before using it. Use: ‘install.packages()’ function. Do it in the console and not in the report. To create plots with ggplot2 you first need to load the package using library(ggplot2).
+```{r}
+library(ggplot2)
+
+ggplot(cars)
+```
+ Note that this command does not plot anything but a blank gray canvas yet. The ggplot() function alone just defines the dataset for the plot and creates an empty base on top of which we will add additional layers to build up our plot.
+ 
+ ggplot needs three things:
+ 1. the ’data=’ defined to map to a certain data.frame
+2. the ‘aes()’ function with the parameters for the plot
+3. the ‘geom()’ function with the type of plot (i.e. points or lines or box)
+
+ **Specifing aesthetic mappings with aes().**
+ We will use the columns labeled speed and distance from the cars dataset to set the x and y aesthetics of our plot. Critically, we combine our call to the aes() function with our previous specification of the input dataset with the ggplot(cars) function call from above.
+```{r}
+ggplot(cars) +
+  aes(x=speed, y=dist)
+```
+ Now that we have our axes, we now need to add one of ggplot’s geometric layers (or geoms) to define how we want to visualize our dataset.
+ 
+ **Specifing a geom layer with geom_point()**
+ geom_line() produces a line plot, geom_bar() produces a bar plot, geom_boxplot() a box plot, geom_point() adds a scatter plot.
+ 
+ In this example, we use geom_line()
+ 
+```{r}
+ggplot(cars) +
+  aes(x=speed, y=dist) +
+  geom_point()
+```
+ 
+Now we have data being plotted!
+
+To add a trend line to the data, add " `geom_smooth()` "
+```{r}
+ggplot(cars) +
+  aes(x=speed, y=dist) +
+  geom_point() +
+  geom_smooth()
+```
+
+
+using formula 'y ~ x'  and se = FALSE we can remove the shaded region and make the line straight.
+
+```{r}
+  ggplot(data=cars) + aes(x=speed, y=dist) + geom_point() +
+    geom_smooth(se=FALSE, method=lm)
+```
+Now finish this plot by adding various label annotations with the labs() function and changing the plot look to a more conservative “black & white” theme by adding the theme_bw() function.
+```{r}
+ggplot(cars) + 
+  aes(x=speed, y=dist) +
+  geom_point() +
+  labs(title="Speed and Stopping Distances of Cars",
+       x="Speed (MPH)", 
+       y="Stopping Distance (ft)",
+       subtitle = "Your informative subtitle text here",
+       caption="Dataset: 'cars'") +
+  geom_smooth(method="lm", se=FALSE) +
+  theme_bw()
+```
+Next,  we will cover how to:
+
+1. Adjust the point size of a scatter plot using the **size** parameter.
+2. Change the point color of a scatter plot using the **color** parameter.
+3. Set a parameter **alpha** to change the transparency of all points.
+
+
+The code below reads the results of a differential expression analysis where a new anti-viral drug is being tested.
+```{r}
+url <- "https://bioboot.github.io/bimm143_S20/class-material/up_down_expression.txt"
+genes <- read.delim(url)
+head(genes)
+```
+Check out the dataset.
+```{r}
+ ggplot(data=genes) + aes(x=Condition1, y=Condition2) +
+  geom_point()
+```
+
+**Q. Use the nrow() function to find out how many genes are in this dataset. What is your answer?**
+```{r}
+nrow(genes)
+```
+
+There are 5196 genes in this dataset.
+
+**Q. Use the colnames() function and the ncol() function on the genes data frame to find out what the column names are (we will need these later) and how many columns there are. How many columns did you find?**
+
+```{r}
+colnames(genes)
+ncol(genes)
+```
+There are 4 columns in this dataset and their names are, "Gene"  "Condition1" "Condition2" "State". 
+
+**Q.Use the table() function on the State column of this data.frame to find out how many ‘up’ regulated genes there are. What is your answer?**
+
+```{r}
+table(genes$State)
+```
+There are 127 genes upregulated. 
+
+**Q. Using your values above and 2 significant figures. What fraction of total genes is up-regulated in this dataset?**
+
+```{r}
+ fraction <- 100*table(genes[,4])[3]/nrow(genes)
+  signif(fraction, digits=3)
+```
+The fraction of total genes is up-regulated in this dataset is 2.44.
+
+Could also have done: round( table(genes$State)/nrow(genes) * 100, 2 ) to view fraction of all states. 
+
+Now make a first basic scatter plot of this dataset.
+
+1. Pass the genes data.frame as input to the ggplot() function.
+2. Then use the aes() function to set the x and y aesthetic mappings to the Condition1 and Condition2 columns.
+3. Finally add a geom_point() layer to add points to the plot.
+ Don’t forget to add layers step-wise with the + operator at the end of each line.
+ 
+Color by the State of gene modification (up, down or unchanging). Assign the plot to object p.
+```{r}
+ p <- ggplot(data=genes) + aes(x=Condition1, y=Condition2, col=State) +
+    geom_point()
+p
+```
+
+
+You can also change the colors of the categorical variable of state. Build onto p.
+
+```{r}
+p2 <- p + scale_color_manual(values = c("blue", "gray", "red"))
+
+p2
+```
+
+Now add labels to the plot to add context.This is done using the labs() function.
+```{r}
+ p2 +
+    labs(title = "Gene Expression changes upon Drug Treatment",
+         x = "Control (no drug)", y = "Drug Treatment")
+ 
+```
+**Gap minder dataset**
+Acquire the data first
+```{r}
+# File location online
+url <- "https://raw.githubusercontent.com/jennybc/gapminder/master/inst/extdata/gapminder.tsv"
+
+gapminder <- read.delim(url)
+```
+
+Use dplyr to view dataset at a filtered level containing only the rows with a year value of 2007.
+```{r}
+# install.packages("dplyr")  ## un-comment to install if needed
+library(dplyr)
+
+gapminder_2007 <- gapminder %>% filter(year==2007)
+```
+Make a scatter plot of this data with x axis being the GDP per capita and y axis is life expectancy.
+```{r}
+
+  ggplot(data=gapminder_2007) + aes(x=gdpPercap, y=lifeExp) +
+    geom_point()
+```
+
+Use the alpha parameter to change the transparency of the points. This can help with seeing data points that overlap too.
+```{r}
+  ggplot(data=gapminder_2007) + aes(x=gdpPercap, y=lifeExp) +
+    geom_point(alpha=0.4)
+
+```
+
+Now add more varibales:
+
+By mapping the continent variable to the point color aesthetic and the population pop (in millions) through the point size argument to aes() we can obtain a much richer plot that now includes 4 different variables from the data set.
+```{r}
+ ggplot(data=gapminder_2007) + aes(x=gdpPercap, y=lifeExp,
+                                    color=continent, size=pop) +
+ geom_point(alpha=0.4)
+```
+By contrast, let’s see how the plot looks like if we color the points by the numeric variable population pop:
+
+```{r}
+ggplot(gapminder_2007) + 
+  aes(x = gdpPercap, y = lifeExp, color = pop) +
+  geom_point(alpha=0.8)
+```
+
+The scale  changes to continuous as can be seen in the legend and the light-blue points are now the countries with the highest population number (China and India). This helps with seing gradient of magnitude of given variable value.
+
+Next we can adjust the point size.
+
+For the gapminder_2007 dataset we can plot the GDP per capita (x=gdpPercap) vs. the life expectancy (y=lifeExp) and set the point size based on the population (size=pop) of each country we can use:
+```{r}
+ggplot(gapminder_2007) + 
+  aes(x = gdpPercap, y = lifeExp, size = pop) +
+  geom_point(alpha=0.5)
+```
+To reflect the actual population differences by the point size we can use the scale_size_area() function instead. The scaling information can be added like any other ggplot object with the + operator:
+```{r}
+ggplot(gapminder_2007) + 
+  geom_point(aes(x = gdpPercap, y = lifeExp,
+                 size = pop), alpha=0.5) + 
+  scale_size_area(max_size = 10)
+```
+**Q. Can you adapt the code you have learned thus far to reproduce our gapminder scatter plot for the year 1957? What do you notice about this plot is it easy to compare with the one for 2007?**
+```{r}
+gapminder_1957 <- gapminder %>% filter(year==1957)
+
+ggplot(gapminder_1957) + 
+  aes(x = gdpPercap, y = lifeExp, color=continent,
+                 size = pop) +
+  geom_point(alpha=0.7) + 
+  scale_size_area(max_size = 10) 
+```
+Use dplyr to filter the gapmider dataset to include only the year 1957 (check above for how we did this for 2007).
+Save your result as gapminder_1957.
+Use the ggplot() function and specify the gapminder_1957 dataset as input
+Add a geom_point() layer to the plot and create a scatter plot showing the GDP per capita gdpPercap on the x-axis and the life expectancy lifeExp on the y-axis
+Use the color aesthetic to indicate each continent by a different color
+Use the size aesthetic to adjust the point size by the population pop
+Use scale_size_area() so that the point sizes reflect the actual population differences and set the max_size of each point to 15 -Set the opacity/transparency of each point to 70% using the alpha=0.7 parameter
+
+
+**Q. Do the same steps above but include 1957 and 2007 in your input dataset for ggplot(). You should now include the layer facet_wrap(~year) to produce the following plot:**
+
+```{r}
+gapminder_1957 <- gapminder %>% filter(year==1957 | year==2007)
+
+ggplot(gapminder_1957) + 
+  geom_point(aes(x = gdpPercap, y = lifeExp, color=continent,
+                 size = pop), alpha=0.7) + 
+  scale_size_area(max_size = 10) +
+  facet_wrap(~year)
+```
+
+
+**Bar Charts**
+Bar charts visualize numeric values grouped by categories. Each category is represented by one bar with a height defined by each numeric value.
+
+Below you can find an example showing the number of people (in millions) in the five biggest countries by population in 2007:
+```{r}
+gapminder_top5 <- gapminder %>% 
+  filter(year==2007) %>% 
+  arrange(desc(pop)) %>% 
+  top_n(5, pop)
+
+gapminder_top5
+```
+In ggplot2, bar charts are created using the geom_col() geometric layer. The geom_col() layer requires the x aesthetic mapping which defines the different bars to be plotted. The height of each bar is defined by the variable specified in the y aesthetic mapping. Both mappings, x and y are required for geom_col(). Let’s create our first bar chart with the gapminder_top5 dataset. It contains population (in millions) and life expectancy data for the biggest countries by population in 2007.
+
+```{r}
+ggplot(gapminder_top5) + 
+  geom_col(aes(x = country, y = pop))
+```
+
+
+
+**Q Create a bar chart showing the life expectancy of the five biggest countries by population in 2007.**
+```{r}
+
+  ggplot(gapminder_top5) +
+    geom_col(aes(x = country, y = lifeExp))
+```
+
+Now fill the bars with colors using continent variable as meaning.
+```{r}
+ggplot(gapminder_top5) + 
+  geom_col(aes(x = country, y = pop, fill = continent))
+```
+ 
+Or use the life expectancy variable as a numeric variable.
+```{r}
+ggplot(gapminder_top5) + 
+  geom_col(aes(x = country, y = pop, fill = lifeExp))
+```
+**Q. Plot population size by country. Create a bar chart showing the population (in millions) of the five biggest countries by population in 2007.**
+```{r}
+ggplot(gapminder_top5) +
+  aes(x=country, y=pop, fill=gdpPercap) +
+  geom_col()
+```
+Now chnage the order of the bars
+```{r}
+ggplot(gapminder_top5) +
+  aes(x=reorder(country, -pop), y=pop, fill=gdpPercap) +
+  geom_col()
+```
+Now fill by country
+
+```{r}
+ggplot(gapminder_top5) +
+  aes(x=reorder(country, -pop), y=pop, fill=country) +
+  geom_col(col="gray30") +
+  guides(fill="none")
+```
+Sometimes it might be useful to rotate (or “flip”) your plots to enable a more clear visualization. For this we can use the coord_flip() function. Lets look at an example considering arrest data in US states. This is another inbult dataset called USArrests.
+
+```{r}
+head(USArrests)
+```
+```{r}
+USArrests$State <- rownames(USArrests)
+ggplot(USArrests) +
+  aes(x=reorder(State,Murder), y=Murder) +
+  geom_col() +
+  coord_flip()
+```
+Combine two different plotting methods by combining geom_point() and geom_segment(). 
+```{r}
+ggplot(USArrests) +
+  aes(x=reorder(State,Murder), y=Murder) +
+  geom_point() +
+  geom_segment(aes(x=State, 
+                   xend=State, 
+                   y=0, 
+                   yend=Murder), color="blue") +
+  coord_flip()
+```
+
