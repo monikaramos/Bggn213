@@ -1,3 +1,3 @@
 # bggn213
 lab
-This repo is for my UCSD bioinformatics class. 
+This repository is for my UCSD bioinformatics class. 
