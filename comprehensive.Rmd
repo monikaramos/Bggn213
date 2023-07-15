@@ -1,0 +1,44 @@
+---
+title: "comprehensive"
+author: "Monika Ramos"
+date: '2023-07-15'
+output: html_document
+---
+load necessary libraries
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(lubridate)
+```
+
+Now read in the data
+```{r}
+covid.data <- read.csv(file = 'covid19_variants.csv')
+head(covid.data)
+```
+
+Convert chr to date format and sort by date
+
+```{r}
+covid.data$date <- as.Date(covid.data$date)
+covid.data <- covid.data[order(covid.data$date), ]
+```
+
+Remove unused variant names: “Total”
+```{r}
+covid.data.filtered <- subset(covid.data, variant_name != "Total")
+```
+
+Make the plot
+```{r}
+ggplot(covid.data.filtered, aes(x = date, y = percentage, color = variant_name)) +
+  geom_line() +
+  labs(title = "COVID-19 Variants in California",
+       x = "Date (Grouped by 4 months)",
+       y = "Percentage of sequenced specimens",
+       color = "COVID Variant") +
+    theme_minimal() +
+scale_x_date(date_labels = "%b %Y", date_breaks = "4 months")
+```
+
+
